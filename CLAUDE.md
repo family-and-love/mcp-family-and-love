@@ -1,58 +1,93 @@
-# CLAUDE.md
+# MCP Family and Love
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Overview
 
-## Repository Purpose
+Custom MCP server for Family and Love studio operations and maintenance. Provides tools for managing N8N workflows, Airtable records, booking operations, and business automation.
 
-This is an MCP (Model Context Protocol) server configuration repository for building an autonomous AI agent for Family and Love, a professional photography studio in Paris (https://www.familyandlove.fr/).
+## Tech Stack
 
-The agent's mission is to automate and manage various business operations including:
-- Online booking system for photo sessions (family, pregnancy, newborn, couple)
-- Customer communication (email, phone, contact forms)
-- Gift voucher operations
-- Photo gallery management
-- FAQ and content updates
-- Social media integration (Instagram)
-- Analytics tracking and reporting
-- Business workflow automation
+- **Runtime**: Bun
+- **Language**: TypeScript
+- **MCP SDK**: `@modelcontextprotocol/sdk` v1.x (stdio transport)
+- **Validation**: Zod v4
+- **Linter**: Biome
 
-The repository contains MCP server definitions that enable integration with external services and automation platforms to achieve these goals.
+## Project Structure
 
-## MCP Server Configuration
+```
+mcp-family-and-love/
+├── src/
+│   └── index.ts              # MCP server entry point
+├── .specify/                 # Spec-kit configuration
+│   ├── memory/
+│   │   └── constitution.md   # Project principles
+│   ├── scripts/              # Spec-kit bash scripts
+│   └── templates/            # Spec/plan/task templates
+├── .claude/
+│   └── commands/             # Spec-kit slash commands
+├── specs/                    # Feature specifications (created per feature)
+├── biome.json                # Biome linter config
+├── tsconfig.json             # TypeScript config
+└── package.json              # Dependencies and scripts
+```
 
-The repository's primary artifact is `mcp.json`, which defines three MCP servers:
+## Development Commands
 
-### Configured Servers
+```bash
+bun run dev           # Run server locally
+bun run start         # Start server
+bun run typecheck     # TypeScript validation
+bun run lint          # Biome check
+bun run lint:fix      # Biome auto-fix
+bun run inspector     # MCP Inspector (debug tools)
+```
 
-1. **Airtable** (`airtable`)
-   - Command: `npx -y airtable-mcp-server`
-   - Requires: `AIRTABLE_API_KEY` environment variable
-   - Purpose: Integration with Airtable databases
+## MCP Server Architecture
 
-2. **n8n** (`n8n`)
-   - Command: `npx n8n-mcp`
-   - Requires: `N8N_API_URL` and `N8N_API_KEY` environment variables
-   - Configuration: stdio mode, error-level logging, console output disabled
-   - Purpose: n8n workflow automation platform integration
+The server uses **stdio transport** for local integration with Claude Code.
 
-3. **Make.com** (`make`)
-   - Command: `npx -y mcp-remote https://mcp.make.com/sse`
-   - Uses: OAuth SSE connection via mcp-remote proxy
-   - Purpose: Make.com automation platform integration
+### Entry Point
 
-### Working with MCP Configuration
+`src/index.ts` — Initializes `McpServer` and connects via `StdioServerTransport`.
 
-When modifying `mcp.json`:
-- Use the standard MCP server configuration format with `mcpServers` top-level key
-- Each server requires a `command` field and `args` array
-- Environment variables are specified in the `env` object
-- For SSE-based connections (like Make.com), use the `mcp-remote` proxy
-- API keys should remain as placeholders (`YOUR_*`) in the repository
+### Adding Tools
 
-### Adding New MCP Servers
+```typescript
+import { z } from "zod";
 
-To add a new MCP server:
-1. Consult the official MCP server documentation for the service
-2. Add a new entry under `mcpServers` with appropriate command and arguments
-3. Include required environment variables with placeholder values
-4. Test the configuration locally before committing
+server.tool(
+  "tool-name",
+  "Tool description",
+  { param: z.string() },
+  async ({ param }) => {
+    return { content: [{ type: "text", text: "result" }] };
+  }
+);
+```
+
+## External Services
+
+| Service | Purpose | Auth |
+|---------|---------|------|
+| N8N | Workflow automation | API key |
+| Airtable | Database (bookings, contacts) | API key |
+| Acuity | Calendar scheduling | API key |
+| Stripe | Payment processing | API key |
+
+## Spec-Driven Development
+
+This project uses [spec-kit](https://github.com/github/spec-kit) for specification-driven development.
+
+### Workflow
+
+1. `/speckit.constitution` — Define project principles
+2. `/speckit.specify` — Create feature specification
+3. `/speckit.plan` — Research and plan implementation
+4. `/speckit.tasks` — Generate task list
+5. `/speckit.implement` — Execute tasks
+
+## Contributing
+
+1. Write specs before code (spec-kit workflow)
+2. Run `bun run lint && bun run typecheck` before commits
+3. Use conventional commits (`feat:`, `fix:`, `chore:`)

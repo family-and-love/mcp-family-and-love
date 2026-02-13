@@ -1,0 +1,27 @@
+{
+	"name": "mcp-family-and-love",
+	"version": "0.1.0",
+	"description": "MCP server for Family and Love studio maintenance — N8N workflows, Airtable, booking ops",
+	"module": "src/index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "bun run src/index.ts",
+		"start": "bun run src/index.ts",
+		"typecheck": "tsc --noEmit",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"inspector": "bunx @modelcontextprotocol/inspector bun run src/index.ts"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.15",
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.26.0",
+		"zod": "^4.3.6"
+	}
+}
