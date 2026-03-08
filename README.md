@@ -2,59 +2,62 @@
 
 ## Overview
 
-This repository contains MCP (Model Context Protocol) server configurations for building an autonomous AI agent that can interact with and manage various tools and services of [Family and Love](https://www.familyandlove.fr/), a professional photography studio in Paris.
+MCP (Model Context Protocol) server for [Family and Love](https://www.familyandlove.fr/), a professional photography studio in Paris. Provides tools for booking management, customer communication, workflow automation, and business operations.
 
-## Purpose
-
-The goal is to design an autonomous agent capable of:
-
-- **Booking Management**: Handle online booking system for photo sessions
-- **Customer Communication**: Manage inquiries via phone, email, and contact forms
-- **Gift Voucher Operations**: Process and track gift voucher purchases
-- **Photo Gallery Management**: Organize and update photo galleries
-- **FAQ & Content Updates**: Maintain website content and frequently asked questions
-- **Social Media Integration**: Connect with Instagram and other social platforms
-- **Analytics Tracking**: Monitor website performance and customer engagement
-- **Workflow Automation**: Streamline business processes using n8n and Make.com
-
-## MCP Servers
-
-This project integrates three MCP servers:
-
-1. **Airtable** - Database management for bookings, customers, and inventory
-2. **n8n** - Workflow automation for business processes
-3. **Make.com** - Additional automation and integration capabilities
+Deployed on Vercel as a [Streamable HTTP](https://modelcontextprotocol.io/docs/concepts/transports#streamable-http) endpoint.
 
 ## Installation
 
-### Claude Desktop (stdio)
+### Claude Desktop
 
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+Requires [mcp-remote](https://github.com/geelen/mcp-remote) to bridge Streamable HTTP to stdio. Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "family-and-love": {
-      "command": "bun",
-      "args": ["run", "start"],
-      "cwd": "/path/to/mcp-family-and-love"
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://mcp-family-and-love-family-and-loves-projects.vercel.app/api/mcp",
+        "--transport",
+        "http-only"
+      ]
     }
   }
 }
 ```
 
-### Claude Code (Streamable HTTP)
+> **Note**: If `npx` is not found by Claude Desktop, use the absolute path (e.g. `/Users/<you>/.nvm/versions/node/v22.x.x/bin/npx`) and add `"env": { "PATH": "/Users/<you>/.nvm/versions/node/v22.x.x/bin:/usr/local/bin:/usr/bin:/bin" }` to ensure Node >= 18 is used.
+
+### Claude Code
 
 ```bash
 claude mcp add family-and-love --transport http https://mcp-family-and-love-family-and-loves-projects.vercel.app/api/mcp
 ```
 
-## Business Context
+## Tools
 
-Family and Love offers:
-- Free 1-hour photo sessions (family, pregnancy, newborn, couple)
-- Pay-only-for-liked-photos model
-- Located at 10 rue Charles Delescluze, Paris 11
-- Contact: hello@familyandlove.fr / +33 7 75 76 90 44
+| Tool | Description |
+|------|-------------|
+| `sync-daily-appointments` | Sync Acuity Scheduling appointments to Airtable for a given date (defaults to today) |
 
-Tagline: *"Vos souvenirs, notre passion"*
+## Tech Stack
+
+- **Runtime**: Bun
+- **Language**: TypeScript
+- **MCP SDK**: `@modelcontextprotocol/sdk` v1.x
+- **Validation**: Zod v4
+- **Linter**: Biome
+- **Deployment**: Vercel (Streamable HTTP via `api/mcp.ts`)
+
+## Development
+
+```bash
+bun install
+bun run dev           # Run server locally (stdio)
+bun run typecheck     # TypeScript validation
+bun run lint          # Biome check
+bun run lint:fix      # Biome auto-fix
+bun run inspector     # MCP Inspector (debug tools)
+```
