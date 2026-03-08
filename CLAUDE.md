@@ -53,6 +53,9 @@ ACUITY_API_KEY=your_acuity_api_key
 
 # Optional (defaults to hardcoded value)
 N8N_WEBHOOK_URL=your_n8n_webhook_url
+
+# Optional — secures the HTTP endpoint with Bearer token auth
+MCP_API_KEY=your_mcp_api_key
 ```
 
 ## Development Commands

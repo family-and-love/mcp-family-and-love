@@ -45,9 +45,14 @@ ACUITY_API_KEY=your_acuity_api_key
 
 # Optional
 N8N_WEBHOOK_URL=your_n8n_webhook_url
+
+# API key to secure the HTTP endpoint (optional — if set, requires Authorization: Bearer <key>)
+MCP_API_KEY=your_mcp_api_key
 ```
 
 Acuity credentials use HTTP Basic Auth (`userId:apiKey` base64-encoded). Get them from your [Acuity Scheduling API settings](https://acuityscheduling.com/oauth2/client).
+
+When `MCP_API_KEY` is set, all HTTP requests must include `Authorization: Bearer <key>`. For Claude Desktop, use `--header "Authorization:${MCP_API_KEY}"` with mcp-remote (see installation section).
 
 ## Tools (36)
 
