@@ -25,6 +25,28 @@ This project integrates three MCP servers:
 2. **n8n** - Workflow automation for business processes
 3. **Make.com** - Additional automation and integration capabilities
 
+## Installation
+
+### Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "family-and-love": {
+      "url": "https://mcp-family-and-love-family-and-loves-projects.vercel.app/api/mcp"
+    }
+  }
+}
+```
+
+### Claude Code
+
+```bash
+claude mcp add family-and-love --transport http https://mcp-family-and-love-family-and-loves-projects.vercel.app/api/mcp
+```
+
 ## Business Context
 
 Family and Love offers:
