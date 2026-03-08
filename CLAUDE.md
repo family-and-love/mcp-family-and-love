@@ -2,13 +2,13 @@
 
 ## Overview
 
-Custom MCP server for Family and Love studio operations and maintenance. Provides tools for managing N8N workflows, Airtable records, booking operations, and business automation.
+Unified MCP server for Family and Love studio operations. Wraps the full Acuity Scheduling REST API (35 tools) and N8N workflow automation (1 tool). Deployed on Vercel as Streamable HTTP, also runs locally via stdio.
 
 ## Tech Stack
 
 - **Runtime**: Bun
 - **Language**: TypeScript
-- **MCP SDK**: `@modelcontextprotocol/sdk` v1.x (stdio transport)
+- **MCP SDK**: `@modelcontextprotocol/sdk` v1.x (stdio + Streamable HTTP)
 - **Validation**: Zod v4
 - **Linter**: Biome
 
@@ -17,24 +17,48 @@ Custom MCP server for Family and Love studio operations and maintenance. Provide
 ```
 mcp-family-and-love/
 ├── src/
-│   └── index.ts              # MCP server entry point
-├── .specify/                 # Spec-kit configuration
-│   ├── memory/
-│   │   └── constitution.md   # Project principles
-│   ├── scripts/              # Spec-kit bash scripts
-│   └── templates/            # Spec/plan/task templates
-├── .claude/
-│   └── commands/             # Spec-kit slash commands
-├── specs/                    # Feature specifications (created per feature)
+│   ├── index.ts              # Stdio transport entry point
+│   ├── server.ts             # createServer() — registers all tools + prompts
+│   ├── acuity-client.ts      # Acuity HTTP client (Basic Auth)
+│   ├── helpers.ts            # ok() / fail() response helpers
+│   ├── prompts.ts            # 3 MCP prompts
+│   └── tools/
+│       ├── n8n.ts            # sync-daily-appointments (N8N webhook)
+│       ├── account.ts        # get-me, get-meta
+│       ├── appointments.ts   # 8 appointment tools
+│       ├── availability.ts   # 4 availability tools
+│       ├── blocks.ts         # 4 block tools
+│       ├── calendars.ts      # list-calendars
+│       ├── certificates.ts   # 4 certificate tools
+│       ├── clients.ts        # 4 client tools
+│       ├── forms.ts          # list-forms
+│       ├── labels.ts         # list-labels
+│       ├── orders.ts         # 2 order tools
+│       ├── products.ts       # list-products
+│       └── webhooks.ts       # 3 webhook tools
+├── api/
+│   └── mcp.ts                # Vercel Streamable HTTP endpoint
+├── .env.example              # Environment variables template
 ├── biome.json                # Biome linter config
 ├── tsconfig.json             # TypeScript config
 └── package.json              # Dependencies and scripts
 ```
 
+## Environment Variables
+
+```bash
+# Required for Acuity tools (server starts without them, but Acuity tools won't register)
+ACUITY_USER_ID=your_acuity_user_id
+ACUITY_API_KEY=your_acuity_api_key
+
+# Optional (defaults to hardcoded value)
+N8N_WEBHOOK_URL=your_n8n_webhook_url
+```
+
 ## Development Commands
 
 ```bash
-bun run dev           # Run server locally
+bun run dev           # Run server locally (stdio)
 bun run start         # Start server
 bun run typecheck     # TypeScript validation
 bun run lint          # Biome check
@@ -42,52 +66,27 @@ bun run lint:fix      # Biome auto-fix
 bun run inspector     # MCP Inspector (debug tools)
 ```
 
-## MCP Server Architecture
+## Architecture
 
-The server uses **stdio transport** for local integration with Claude Code.
-
-### Entry Point
-
-`src/index.ts` — Initializes `McpServer` and connects via `StdioServerTransport`.
-
-### Adding Tools
-
-```typescript
-import { z } from "zod";
-
-server.tool(
-  "tool-name",
-  "Tool description",
-  { param: z.string() },
-  async ({ param }) => {
-    return { content: [{ type: "text", text: "result" }] };
-  }
-);
-```
+- `src/server.ts` creates the McpServer and conditionally registers tools
+- N8N tools always register (no credentials needed)
+- Acuity tools only register if `ACUITY_USER_ID` and `ACUITY_API_KEY` are set
+- Each tool domain has its own file in `src/tools/` exporting a `registerXxxTools()` function
+- `src/helpers.ts` provides `ok(data)` and `fail(message)` for consistent MCP responses
 
 ## External Services
 
 | Service | Purpose | Auth |
 |---------|---------|------|
-| N8N | Workflow automation | API key |
-| Airtable | Database (bookings, contacts) | API key |
-| Acuity | Calendar scheduling | API key |
-| Stripe | Payment processing | API key |
-
-## Spec-Driven Development
-
-This project uses [spec-kit](https://github.com/github/spec-kit) for specification-driven development.
-
-### Workflow
-
-1. `/speckit.constitution` — Define project principles
-2. `/speckit.specify` — Create feature specification
-3. `/speckit.plan` — Research and plan implementation
-4. `/speckit.tasks` — Generate task list
-5. `/speckit.implement` — Execute tasks
+| Acuity Scheduling | Calendar, appointments, clients | HTTP Basic Auth |
+| N8N | Workflow automation | Webhook URL |
+| Airtable | Database (bookings, contacts) | Via N8N |
 
 ## Contributing
 
-1. Write specs before code (spec-kit workflow)
-2. Run `bun run lint && bun run typecheck` before commits
-3. Use conventional commits (`feat:`, `fix:`, `chore:`)
+1. Run `bun run lint && bun run typecheck` before commits
+2. Use conventional commits (`feat:`, `fix:`, `chore:`)
+3. Add new tools in `src/tools/` following the `registerXxxTools()` pattern
+
+# currentDate
+Today's date is 2026-03-08.

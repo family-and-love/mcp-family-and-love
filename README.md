@@ -2,7 +2,7 @@
 
 ## Overview
 
-MCP (Model Context Protocol) server for [Family and Love](https://www.familyandlove.fr/), a professional photography studio in Paris. Provides tools for booking management, customer communication, workflow automation, and business operations.
+MCP (Model Context Protocol) server for [Family and Love](https://www.familyandlove.fr/), a professional photography studio in Paris. Provides 36 tools covering Acuity Scheduling (appointments, availability, clients, calendars, blocks, certificates, orders, products, forms, labels, webhooks) and N8N workflow automation.
 
 Deployed on Vercel as a [Streamable HTTP](https://modelcontextprotocol.io/docs/concepts/transports#streamable-http) endpoint.
 
@@ -36,11 +36,44 @@ Requires [mcp-remote](https://github.com/geelen/mcp-remote) to bridge Streamable
 claude mcp add family-and-love --transport http https://mcp-family-and-love-family-and-loves-projects.vercel.app/api/mcp
 ```
 
-## Tools
+### Environment Variables
 
-| Tool | Description |
-|------|-------------|
-| `sync-daily-appointments` | Sync Acuity Scheduling appointments to Airtable for a given date (defaults to today) |
+```bash
+# Required for Acuity tools (optional — server starts without them)
+ACUITY_USER_ID=your_acuity_user_id
+ACUITY_API_KEY=your_acuity_api_key
+
+# Optional
+N8N_WEBHOOK_URL=your_n8n_webhook_url
+```
+
+Acuity credentials use HTTP Basic Auth (`userId:apiKey` base64-encoded). Get them from your [Acuity Scheduling API settings](https://acuityscheduling.com/oauth2/client).
+
+## Tools (36)
+
+| Domain | Tools | Count |
+|--------|-------|-------|
+| N8N | `sync-daily-appointments` | 1 |
+| Account | `get-me`, `get-meta` | 2 |
+| Appointments | `count-daily-bookings`, `list-appointments`, `create-appointment`, `get-appointment`, `update-appointment`, `cancel-appointment`, `reschedule-appointment`, `list-appointment-payments` | 8 |
+| Availability | `list-available-dates`, `list-available-times`, `list-available-classes`, `check-availability` | 4 |
+| Blocks | `list-blocks`, `create-block`, `get-block`, `delete-block` | 4 |
+| Calendars | `list-calendars` | 1 |
+| Certificates | `list-certificates`, `create-certificate`, `delete-certificate`, `check-certificate` | 4 |
+| Clients | `list-clients`, `create-client`, `update-client`, `delete-client` | 4 |
+| Forms | `list-forms` | 1 |
+| Labels | `list-labels` | 1 |
+| Orders | `list-orders`, `get-order` | 2 |
+| Products | `list-products` | 1 |
+| Webhooks | `list-webhooks`, `create-webhook`, `delete-webhook` | 3 |
+
+## Prompts (3)
+
+| Prompt | Description |
+|--------|-------------|
+| `daily-report` | Generate a daily activity report (bookings, appointments, cancellations) |
+| `client-lookup` | Look up a client's history by email |
+| `weekly-availability` | Check available slots for the upcoming week |
 
 ## Tech Stack
 
@@ -54,6 +87,8 @@ claude mcp add family-and-love --transport http https://mcp-family-and-love-fami
 ## Development
 
 ```bash
+cp .env.example .env
+# Fill in ACUITY_USER_ID and ACUITY_API_KEY
 bun install
 bun run dev           # Run server locally (stdio)
 bun run typecheck     # TypeScript validation

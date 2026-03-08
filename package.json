@@ -1,7 +1,7 @@
 {
 	"name": "mcp-family-and-love",
-	"version": "0.1.0",
-	"description": "MCP server for Family and Love studio maintenance — N8N workflows, Airtable, booking ops",
+	"version": "0.2.0",
+	"description": "MCP server for Family and Love studio — Acuity Scheduling API (36 tools), N8N workflows, Airtable sync",
 	"module": "src/index.ts",
 	"type": "module",
 	"private": true,

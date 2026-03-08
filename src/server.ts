@@ -1,63 +1,48 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
-
-const N8N_WEBHOOK_URL =
-	"https://n8n.srv780195.hstgr.cloud/webhook/3eb750d1-e47b-4200-84f1-55b74540e477";
+import { AcuityClient } from "./acuity-client.js";
+import { registerPrompts } from "./prompts.js";
+import { registerAccountTools } from "./tools/account.js";
+import { registerAppointmentTools } from "./tools/appointments.js";
+import { registerAvailabilityTools } from "./tools/availability.js";
+import { registerBlockTools } from "./tools/blocks.js";
+import { registerCalendarTools } from "./tools/calendars.js";
+import { registerCertificateTools } from "./tools/certificates.js";
+import { registerClientTools } from "./tools/clients.js";
+import { registerFormTools } from "./tools/forms.js";
+import { registerLabelTools } from "./tools/labels.js";
+import { registerN8nTools } from "./tools/n8n.js";
+import { registerOrderTools } from "./tools/orders.js";
+import { registerProductTools } from "./tools/products.js";
+import { registerWebhookTools } from "./tools/webhooks.js";
 
 export function createServer(): McpServer {
 	const server = new McpServer({
 		name: "mcp-family-and-love",
-		version: "0.1.0",
+		version: "0.2.0",
 	});
 
-	server.tool(
-		"sync-daily-appointments",
-		"Sync Acuity Scheduling appointments to Airtable for a given date. Fetches appointments from Acuity, deduplicates against the Airtable Bookings table, and creates missing booking cards via Make.com. Defaults to today if no date is provided.",
-		{
-			date: z
-				.string()
-				.date()
-				.optional()
-				.describe("Date in YYYY-MM-DD format. Defaults to today."),
-		},
-		async ({ date }) => {
-			const targetDate = date ?? new Date().toISOString().split("T")[0];
-			const url = `${N8N_WEBHOOK_URL}?date=${targetDate}`;
+	registerN8nTools(server);
 
-			try {
-				const response = await fetch(url);
+	const userId = process.env.ACUITY_USER_ID;
+	const apiKey = process.env.ACUITY_API_KEY;
 
-				if (!response.ok) {
-					return {
-						content: [
-							{
-								type: "text" as const,
-								text: `N8N webhook error: ${response.status} ${response.statusText}`,
-							},
-						],
-						isError: true,
-					};
-				}
+	if (userId && apiKey) {
+		const client = new AcuityClient(userId, apiKey);
 
-				const data = await response.text();
-
-				return {
-					content: [{ type: "text" as const, text: data }],
-				};
-			} catch (error) {
-				const message = error instanceof Error ? error.message : String(error);
-				return {
-					content: [
-						{
-							type: "text" as const,
-							text: `Failed to reach N8N webhook: ${message}`,
-						},
-					],
-					isError: true,
-				};
-			}
-		},
-	);
+		registerAccountTools(server, client);
+		registerAppointmentTools(server, client);
+		registerAvailabilityTools(server, client);
+		registerBlockTools(server, client);
+		registerCalendarTools(server, client);
+		registerCertificateTools(server, client);
+		registerClientTools(server, client);
+		registerFormTools(server, client);
+		registerLabelTools(server, client);
+		registerOrderTools(server, client);
+		registerProductTools(server, client);
+		registerWebhookTools(server, client);
+		registerPrompts(server);
+	}
 
 	return server;
 }
