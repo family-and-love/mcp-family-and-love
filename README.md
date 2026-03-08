@@ -27,7 +27,7 @@ This project integrates three MCP servers:
 
 ## Installation
 
-### Claude Desktop
+### Claude Desktop (stdio)
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -35,13 +35,15 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "family-and-love": {
-      "url": "https://mcp-family-and-love-family-and-loves-projects.vercel.app/api/mcp"
+      "command": "bun",
+      "args": ["run", "start"],
+      "cwd": "/path/to/mcp-family-and-love"
     }
   }
 }
 ```
 
-### Claude Code
+### Claude Code (Streamable HTTP)
 
 ```bash
 claude mcp add family-and-love --transport http https://mcp-family-and-love-family-and-loves-projects.vercel.app/api/mcp
